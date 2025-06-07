@@ -31,10 +31,6 @@ class Enemy:
     _dir = []
     moving = False
 
-    _angle = 0
-    _rotAccel = 0
-    rotating = False
-
     def __init__(self, pos : list, size : list, texture, display_surface):
         self._pos = pos
         self._tagetSize = size
@@ -57,11 +53,6 @@ class Enemy:
         self._accel = accel
         self._dest = dest/2
         self._dir = dir
-
-    def rotate(self, accel, angle):
-        self.rotating = True
-        self._rotAccel = accel
-        self._angle = angle
 
     def sway(self, accel, angle):
         pass
@@ -92,7 +83,7 @@ clock = pygame.time.Clock()
 running = True
 last_time = time.time()
 
-dummy = Dummy([150, 80], [40, 40])
+dummy = Dummy([30, 30], [40, 40])
 
 while running:
 
@@ -113,7 +104,7 @@ while running:
             if event.key == pygame.K_r:
                 cursor.reload()
             if event.key == pygame.K_m:
-                dummy.move(6, 0.3, [1, -1])
+                dummy.move(10, 1, [1, 0])
 
     cursor.update()
     
