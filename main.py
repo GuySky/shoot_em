@@ -22,55 +22,62 @@ pygame.display.set_caption("SHOOT 'EM")
 pygame.display.set_icon(icon)
 
 class Enemy:
-    _pos = []
-    _tagetSize = []
+    _pos = [0, 0]
+    _size = [0, 0]
+
+    _steps = 0
+    _half = 0
+    _dir = [0, 0]
+    _dest = 0
 
     _speed = 0
     _accel = 0
-    _dest = 0
-    _dir = []
     moving = False
 
     def __init__(self, pos : list, size : list, texture, display_surface):
         self._pos = pos
-        self._tagetSize = size
+        self._size = size
         self.texture : pygame.Surface = texture
         self.display_surface : pygame.Surface = display_surface
         self.taget = pygame.Rect(pos[0], pos[1], size[0], size[1])
 
     def get_pos(self):
         return self._pos
-    
-    def get_tagetSize(self):
-        return self._tagetSize
 
     def render(self):
         self.display_surface.blit(self.texture, self.taget)
 
-    def move(self, dest, accel, dir):
+    def move(self, dir, steps, accel):
         self.moving = True
         self._speed = 0
-        self._accel = accel
-        self._dest = dest/2
+        self._steps = 0
         self._dir = dir
+        self._dest = steps
+        self._half = steps//2
+        self._accel = accel
 
     def sway(self, accel, angle):
         pass
 
     def update(self, dt):
         if self.moving:
-            if abs(self._speed) > abs(self._dest):
+            if self._steps > self._half:
                 self._accel *= (-1)
+                self._half = self._dest
+            
             self._speed += self._accel
-            t0 = self._dir[0] * self._speed * dt
-            t1 = self._dir[1] * self._speed * dt
+
+            t0 =  self._dir[0] * self._speed * dt
+            t1 =  self._dir[1] * self._speed * dt
 
             self._pos[0] += t0
             self._pos[1] += t1
             self.taget = self.taget.move([t0, t1])
 
-            if self._speed < 0:
+            if (self._steps == self._dest):
                 self.moving = False
+            
+            self._steps += 1
 
 class Dummy(Enemy):
     def __init__(self, pos, size):
@@ -104,7 +111,7 @@ while running:
             if event.key == pygame.K_r:
                 cursor.reload()
             if event.key == pygame.K_m:
-                dummy.move(10, 1, [1, 0])
+                dummy.move([1, 0], 20, 1)
 
     cursor.update()
     
