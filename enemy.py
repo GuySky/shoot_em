@@ -23,6 +23,8 @@ class Enemy:
         self._size = size
         self.texture = texture
         self.texture_copy = texture
+        self.shadow = pygame.mask.from_surface(self.texture_copy).to_surface(setcolor=(0, 0, 1, 150))
+        self.shadow.set_colorkey((0,0,0,0))
         self.display_surface = display_surface
         self.taget = pygame.Rect(pos[0], pos[1], size[0], size[1])
 
@@ -30,9 +32,10 @@ class Enemy:
         return self._pos
 
     def render(self):
+        self.display_surface.blit(self.shadow, [self.taget[0]+10, self.taget[1]+5])
         self.display_surface.blit(self.texture_copy, self.taget)
 
-    def move(self, dir, steps, accel):
+    def move(self, dir : list, steps : int, accel : float):
         self.moving = True
         self._speed = 0
         self._steps = 0
@@ -52,7 +55,7 @@ class Enemy:
             t0 =  self._dir[0] * self._speed * dt
             t1 =  self._dir[1] * self._speed * dt
 
-            self.texture_copy = pygame.transform.smoothscale(self.texture, [self._size[0]+(t0*2), self._size[1]+(t1*2)])
+            self.texture_copy = pygame.transform.smoothscale(self.texture, [self._size[0]+(self._speed*dt), self._size[1]+(self._speed*dt)])
             self._pos[0] += t0
             self._pos[1] += t1
             self.taget = self.taget.move([t0, t1])

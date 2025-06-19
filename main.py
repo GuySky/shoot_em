@@ -35,7 +35,9 @@ last_time = time.time()
 
 dummy = Dummy([30, 30], [40, 240])
 
-script = [0, 0, 0, 0]
+script = [[[-1, 0], 100, 0.1], [[1, 0], 100, 0.1]]
+slen = len(script)
+steps = 0
 
 while running:
 
@@ -65,5 +67,12 @@ while running:
 
     pygame.display.flip()
     clock.tick(framerate)
+
+    if not(dummy.moving):
+        steps += 1
+        a = script[steps%slen][0]
+        b = script[steps%slen][1]
+        c = script[steps%slen][2]
+        dummy.move(a, b, c)
 
 pygame.quit()
