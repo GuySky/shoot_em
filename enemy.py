@@ -1,6 +1,13 @@
 import pygame
 
 class Enemy:
+    texture = pygame.Surface([0,0])
+    texture_copy = pygame.Surface([0,0])
+    shadow = pygame.Surface([0,0])
+    display_surface = pygame.Surface([0,0])
+    target = pygame.Rect()
+
+    _spawnpoint = [0, 0]
     _pos = [0, 0]
     _size = [0, 0]
 
@@ -13,20 +20,25 @@ class Enemy:
     _accel = 0
     moving = False
 
-    texture = pygame.Surface([0,0])
-    texture_copy = pygame.Surface([0,0])
-    display_surface = pygame.Surface([0,0])
-    target = pygame.Rect()
+    script = []
+    script_len = 0
+    script_cur = 0
+
+    dead = False
 
     def __init__(self, pos : list, size : list, texture : pygame.Surface, display_surface : pygame.Surface):
+        self._spawnpoint = pos
         self._pos = pos
         self._size = size
         self.texture = texture
         self.texture_copy = texture
-        self.shadow = pygame.mask.from_surface(self.texture_copy).to_surface(setcolor=(0, 0, 1, 150))
+        self.shadow = pygame.mask.from_surface(self.texture_copy).to_surface(setcolor=(1, 0, 0, 150))
         self.shadow.set_colorkey((0,0,0,0))
         self.display_surface = display_surface
         self.taget = pygame.Rect(pos[0], pos[1], size[0], size[1])
+
+    def get_rect(self):
+        return self.taget
 
     def get_pos(self):
         return self._pos
@@ -44,7 +56,15 @@ class Enemy:
         self._half = steps//2
         self._accel = accel
 
-    def update(self, dt):
+    def add_script(self, script : list):
+        self.script = script
+        self.script_len = len(script)
+        self.script_cur = 0
+
+    def update(self):
+        if self.dead:
+            return
+
         if self.moving:
             if self._steps > self._half:
                 self._accel *= (-1)
@@ -52,10 +72,10 @@ class Enemy:
             
             self._speed += self._accel
             
-            t0 =  self._dir[0] * self._speed * dt
-            t1 =  self._dir[1] * self._speed * dt
+            t0 = int(self._dir[0] * self._speed)
+            t1 = int(self._dir[1] * self._speed)
 
-            self.texture_copy = pygame.transform.smoothscale(self.texture, [self._size[0]+(self._speed*dt), self._size[1]+(self._speed*dt)])
+            self.texture_copy = pygame.transform.smoothscale(self.texture, [self._size[0]+t0, self._size[1]+t1])
             self._pos[0] += t0
             self._pos[1] += t1
             self.taget = self.taget.move([t0, t1])
@@ -63,5 +83,16 @@ class Enemy:
             if (self._steps == self._dest):
                 self.moving = False
                 self.texture_copy = self.texture
+                self.script_cur += 1
             
             self._steps += 1
+        else:
+            a = self.script[self.script_cur][0]
+            b = self.script[self.script_cur][1]
+            c = self.script[self.script_cur][2]
+            self.move(a, b, c)
+        
+        if self.script_cur >= self.script_len:
+            self._pos = self._spawnpoint
+            self.texture_copy = self.texture
+            self.script_cur = 0
