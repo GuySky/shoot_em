@@ -1,3 +1,5 @@
+from os import environ
+environ['PYGAME_HIDE_SUPPORT_PROMPT'] = '1'
 import pygame
 
 class Cursor:
@@ -51,3 +53,6 @@ class Cursor:
 
         if self.angle < -(360 - self.weapon*90):
             self.stop_reload()
+
+if __name__ == '__main__':
+    print('Hello from cursor.py')

@@ -1,3 +1,6 @@
+from os import environ
+environ['PYGAME_HIDE_SUPPORT_PROMPT'] = '1'
+
 import pygame
 
 class Enemy:
@@ -96,3 +99,6 @@ class Enemy:
             self._pos = self._spawnpoint
             self.texture_copy = self.texture
             self.script_cur = 0
+
+if __name__ == '__main__':
+    print('Hello from enemy.py')
