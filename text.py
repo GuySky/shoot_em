@@ -11,7 +11,7 @@ class Text():
     
     text = ""
 
-    def __init__(self):
+    def __init__(self, text = ''):
         self._font =  {
                 " ": pygame.image.load("assets\\font\\font_.png").convert_alpha(),
                 ":": pygame.image.load("assets\\font\\font_dd.png").convert_alpha(),
@@ -22,6 +22,7 @@ class Text():
                 ";": pygame.image.load("assets\\font\\font;.png").convert_alpha(),
                 "!": pygame.image.load("assets\\font\\font!.png").convert_alpha(),
                 ".": pygame.image.load("assets\\font\\font..png").convert_alpha(),
+                "'": pygame.image.load("assets\\font\\font'.png").convert_alpha(),
                 "(": pygame.image.load("assets\\font\\font(.png").convert_alpha(),
                 ")": pygame.image.load("assets\\font\\font).png").convert_alpha(),
                 "@": pygame.image.load("assets\\font\\font@.png").convert_alpha(),
@@ -101,6 +102,7 @@ class Text():
                 "Ю": pygame.image.load("assets\\font\\fontЮ.png").convert_alpha(),
                 "Я": pygame.image.load("assets\\font\\fontЯ.png").convert_alpha(),
             }
+        self.text = text.upper()
 
     def set(self, text):
         self.text = text.upper()

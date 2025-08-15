@@ -11,135 +11,248 @@ from levels import Map, Level
 
 pygame.init()
 
-SCREEN_WIDTH, SCREEN_HEIGHT = 320, 180
-screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT), pygame.RESIZABLE | pygame.SCALED)
-pygame.display.toggle_fullscreen()
-
 from text import Text
 
-icon = pygame.image.load(f'assets\\images\\icon.png').convert_alpha()
-backgroung_image = pygame.image.load(f'assets\\images\\background.png').convert_alpha()
+SCREEN_WIDTH, SCREEN_HEIGHT = 320, 180
+display = pygame.display
+screen = display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT), pygame.RESIZABLE | pygame.SCALED)
 
-pygame.display.set_caption("SHOOT 'EM")
-pygame.display.set_icon(icon)
+from button import Button
 
-#   =   CURSOR  =   =   =   =   =   =   =   =   =   =   =
-cursor = Cursor()
-#   =   /CURSOR =   =   =   =   =   =   =   =   =   =   =
+class Game():
+    caption = "SHOOT 'EM"
 
-#   =   LEVELS  =   =   =   =   =   =   =   =   =   =   =
-test_level = Level(json.load(open(f'scripts\\test_lvl.json')))
-test_level.load(screen)
+    screen = screen
+    display = display
 
-chart = Map()
-chart.add_level(test_level)
-#   =   /LEVELS =   =   =   =   =   =   =   =   =   =   =
+    language = 'rus'
+    runs_count = 0
 
-#   =   TEXT    =   =   =   =   =   =   =   =   =   =   =
-text = Text()
-text.set(" :?*-,;!.()@&#%^+=$0123456789 \nabcdefghijklmnopqrstuvwxyz \nабвгдежзийклмнопрстуфхцчшщъыьэюя")
-#   =   /TEXT   =   =   =   =   =   =   =   =   =   =   =
+    _clock = pygame.time.Clock()
+    framerate = 60
+    running = True
 
-framerate = 60
-clock = pygame.time.Clock()
-running = True
+    def __init__(self):
+        self.icon = pygame.image.load(f'assets\\images\\icon.png').convert_alpha()
+        self.backgroung_image = pygame.image.load(f'assets\\images\\background.png').convert_alpha()
 
-#   =   MENU    =   =   =   =   =   =   =   =   =   =   =
-pause_background = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT))
-pause_background.fill([0, 0, 0])
-pause_background.set_alpha(100)
+        self.cursor = Cursor()
+        self.text = Text()
+        self.text.set(" :?*-,;!.()@&#%^+=$0123456789 \nabcdefghijklmnopqrstuvwxyz \nабвгдежзийклмнопрстуфхцчшщъыьэюя")
 
-button_play = pygame.image.load(f'assets//images//play_button.png').convert_alpha()
-button_quit = pygame.image.load(f'assets//images//quit_button.png').convert_alpha()
+        self.screen_copy = self.screen.copy()
+        self.display.toggle_fullscreen()
+        self.display.set_caption(self.caption)
+        self.display.set_icon(self.icon)
+        self.chart = Map()
 
-button_play_br = button_play.get_bounding_rect().scale_by(1.03, 1.05).move(120, 45)
-button_quit_br = button_quit.get_bounding_rect().scale_by(1.03, 1.05).move(120, 95)
-
-def pause(screen_copy):
-    paused = True
-    while paused:
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                return True
-
-            if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_ESCAPE:
-                    paused = False
-                if event.key == pygame.K_F11:
-                    pygame.display.toggle_fullscreen()
-        
-        screen.blit(screen_copy)
-        screen.blit(pause_background)
-
-        if (button_play_br.collidepoint(pygame.mouse.get_pos())):
-            pygame.draw.rect(screen, [195,163,138], button_play_br, 0, 2)
-            if pygame.mouse.get_just_pressed()[0]:
-                paused = False
-
-        if (button_quit_br.collidepoint(pygame.mouse.get_pos())):
-            pygame.draw.rect(screen, [195,163,138], button_quit_br, 0, 2)
-            if pygame.mouse.get_just_pressed()[0]:
-                return True
-        
-        screen.blit(button_play, (120, 45))
-        screen.blit(button_quit, (120, 95))
-
-        pygame.display.flip()
-        clock.tick(framerate)
+    def level(self, level):
+        test_level = Level(json.load(open(level)))
+        test_level.load(self.screen)
+        self.chart.add_level(test_level)
     
-    return False
-#   =   /MENU   =   =   =   =   =   =   =   =   =   =   =
+    def loop_prescreen(self):
+        rus_text = Text('Пожалуйста \nвыберите язык игры')
+        rus_text.change_color((255, 255, 255))
+        eng_text = Text('Please \nchoose the game language')
+        eng_text.change_color((255, 255, 255))
 
-# class Game():
+        button_rus = Button(f'assets/images/buttons/flag_rus.png', f'assets/images/buttons/flag_rus.png', 'flag_rus')
+        button_eng = Button(f'assets/images/buttons/flag_eng.png', f'assets/images/buttons/flag_eng.png', 'flag_eng')
 
-#     def __init__(self):
-#         pass
+        buttons = [button_rus, button_eng]
 
-#     def loop(self):
-#         pass
+        button_rus.set_pos([60, 80])
+        button_eng.set_pos([170, 80])
+        button_rus.scale_by(2)
+        button_eng.scale_by(2)
 
-steps = 0
-while running:
-
-#   =   KEYS MANAGEMENT     =   =   =   =   =   =   =   =
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            running = False
-        
-        if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_ESCAPE:
-                cursor.stop_reload()
-                if pause(screen.copy()):
+        running = True
+        while running:
+            mouse_pos = pygame.mouse.get_pos()
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
                     running = False
-            if event.key == pygame.K_F11:
-                pygame.display.toggle_fullscreen()
-            if event.key == pygame.K_r:
-                cursor.reload()
-            if event.key == pygame.K_c:
-                color = [random.randint(0, 255), 
-                         random.randint(0, 255), 
-                         random.randint(0, 255), 
-                         255]
-                text.change_color(color)
-#   =   /KEYS MANAGEMENT    =   =   =   =   =   =   =   =
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    for button in buttons:
+                        if button.collide_pt(mouse_pos):
+                            if button.id == 'flag_rus':
+                                self.language = 'rus'
+                            else:
+                                self.language = 'eng'
+                            running = False
 
-#   =   DRAWING     =   =   =   =   =   =   =   =   =   =
-    cursor.update()
-    screen.blit(backgroung_image)
-    test_level.update(steps)
-    text.draw(screen, [10, 10], 1, True)
-#   =   /DRAWING    =   =   =   =   =   =   =   =   =   =
+            self.screen.fill("black")
+            
+            if button_rus.render(self.screen, 'rus', mouse_pos):
+                rus_text.draw(self.screen, [30, 30], 1.4, False)
+            if button_eng.render(self.screen, 'eng', mouse_pos):
+                eng_text.draw(self.screen, [30, 30], 1.4, False)
 
-#   =   UPDATE      =   =   =   =   =   =   =   =   =   = 
-    pygame.display.flip()
-    clock.tick(framerate)
+            self.display.flip()
+            self._clock.tick(self.framerate)
 
-    steps += 1
-    if steps >= 1000000:
+    def loop_menu(self):
+        self.runs_count += 1
+
+        black_screen = pygame.Surface([SCREEN_WIDTH, SCREEN_HEIGHT])
+        black_screen.fill([0,0,0])
+        
+
+        background = [pygame.image.load('assets//images//menu//background_dummy.png').convert_alpha(),
+                      pygame.image.load('assets//images//menu//background1.png').convert_alpha(),
+                      pygame.image.load('assets//images//menu//background2.png').convert_alpha(),
+                      pygame.image.load('assets//images//menu//background3.png').convert_alpha(),
+                      pygame.image.load('assets//images//menu//background4.png').convert_alpha(),
+                      pygame.image.load('assets//images//menu//background5.png').convert_alpha(),
+                      pygame.image.load('assets//images//menu//background6.png').convert_alpha(),
+                      pygame.image.load('assets//images//menu//background7.png').convert_alpha(),
+                      pygame.image.load('assets//images//menu//background8.png').convert_alpha(),
+                      pygame.image.load('assets//images//menu//background9.png').convert_alpha(),
+                      pygame.image.load('assets//images//menu//background10.png').convert_alpha(),
+                      ]
+
+        button_play = Button('assets//images//buttons//play_rus.png', 'assets//images//buttons//play_eng.png', 'play')
+        button_play.set_pos([20, 20])
+        button_settings = Button('assets//images//buttons//settings_rus.png', 'assets//images//buttons//settings_eng.png', 'settings')
+        button_settings.set_pos([20, 70])
+        button_quit = Button('assets//images//buttons//quit_rus.png', 'assets//images//buttons//quit_eng.png', 'quit')
+        button_quit.set_pos([20, 120])
+
+        caption = Text(' shoot \n\'em')
+        caption.change_color([246, 214, 189])
+
+        buttons = [button_play, button_settings, button_quit]
+
         steps = 0
-#   =   /UPDATE     =   =   =   =   =   =   =   =   =   =
+        running = True
+        while running:
+            mouse_pos = pygame.mouse.get_pos()
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    running = False
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    for button in buttons:
+                        if button.collide_pt(mouse_pos):
+                            if button.id == 'play':
+                                self.loop_chart()
+                            elif button.id == 'settings':
+                                self.loop_settings()
+                            elif button.id == 'quit':
+                                running = False
 
-# game = Game()
-# game.loop()
+            black_screen.set_alpha(280-steps)
+
+            bg = random.randint(1, 10)
+            self.screen.blit(background[bg])
+            self.screen.blit(background[0], [random.randint(0, 3), random.randint(0, 3)])
+
+            caption.draw(self.screen, [120, 40], 4)
+            
+            for button in buttons:
+                button.render(self.screen, self.language, mouse_pos)
+            
+            self.screen.blit(black_screen)
+
+            self.display.flip()
+            self._clock.tick(self.framerate)
+            steps += 1
+            if steps >= 1000000:
+                steps = 0
+
+    def loop_chart(self, level = -1):
+        if level >= 0:
+            self.loop_level(level)
+
+    def loop_settings(self):
+        pass
+
+    def loop_level(self, number):
+        level_cur = self.chart.level_list[self.chart.level_cur]
+
+        quit = False
+        running = True
+        while running:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    quit = True
+                    running = False
+                
+                if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_ESCAPE:
+                        self.cursor.stop_reload()
+                        print('pause')
+                        if self.loop_pause(self.screen.copy()):
+                            quit = True
+                            running = False
+                    if event.key == pygame.K_F11:
+                        pygame.display.toggle_fullscreen()
+                    if event.key == pygame.K_r:
+                        self.cursor.reload()
+                    if event.key == pygame.K_c:
+                        color = [random.randint(0, 255), 
+                                random.randint(0, 255), 
+                                random.randint(0, 255), 
+                                255]
+                        self.text.change_color(color)
+
+            self.chart.level_list
+
+            self.cursor.update()
+            self.screen.blit(self.backgroung_image)
+            level_cur.update(self._steps)
+            self.text.draw(self.screen, [10, 10], 1, True)
+            self.display.flip()
+            self._clock.tick(self.framerate)
+
+            self._steps += 1
+            if self._steps >= 1000000:
+                self._steps = 0
+
+        return quit
+
+    def loop_pause(self, screen_copy):
+        quit = False
+        paused = True
+        while paused:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    quit = True
+                    paused = False
+
+                if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_ESCAPE:
+                        quit = False
+                        paused = False
+                    if event.key == pygame.K_F11:
+                        self.display.toggle_fullscreen()
+            
+            self.screen.blit(screen_copy)
+            # self.screen.blit(self._pause_background)
+
+            # if (self._button_play_br.collidepoint(pygame.mouse.get_pos())):
+            #     pygame.draw.rect(self.screen, [195,163,138], self._button_play_br, 0, 2)
+            #     if pygame.mouse.get_just_pressed()[0]:
+            #         quit = False
+            #         paused = False
+
+            # if (self._button_quit_br.collidepoint(pygame.mouse.get_pos())):
+            #     pygame.draw.rect(self.screen, [195,163,138], self._button_quit_br, 0, 2)
+            #     if pygame.mouse.get_just_pressed()[0]:
+            #         quit = True
+            #         paused = False
+            
+            # self.screen.blit(self._button_play, (120, 45))
+            # self.screen.blit(self._button_quit, (120, 95))
+
+            self.display.flip()
+            self._clock.tick(self.framerate)
+
+        return quit
+    
+game = Game()
+if game.runs_count == 0:
+    game.loop_prescreen()
+game.loop_menu()
 
 pygame.quit() 
